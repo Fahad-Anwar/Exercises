@@ -22,7 +22,7 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 	protected void populateCallGraph(Scene scene, CallGraph cg) {
 		// Your implementation goes here, also feel free to add methods as needed
 		// To get your entry points we prepared getEntryPoints(scene) in the superclass
-		// for you
+		// for you 
 		Stream<SootMethod> entryPoints = getEntryPoints(scene);
 		entryPoints.forEach(entryPoint -> {
 //			 if (entryPoint.toString().equals("<target.exercise1.SimpleExample: void main(java.lang.String[])>")) {
