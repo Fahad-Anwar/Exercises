@@ -13,26 +13,24 @@ import soot.jimple.Stmt;
 
 public class CHAAlgorithm extends CallGraphAlgorithm {
 
-	@Override
-	protected String getAlgorithm() {
-		return "CHA";
-	}
+    @Override
+    protected String getAlgorithm() {
+        return "CHA";
+    }
 
-	@Override
-	protected void populateCallGraph(Scene scene, CallGraph cg) {
-		// Your implementation goes here, also feel free to add methods as needed
-		// To get your entry points we prepared getEntryPoints(scene) in the superclass
-		// for you 
-		Stream<SootMethod> entryPoints = getEntryPoints(scene);
+    @Override
+    protected void populateCallGraph(Scene scene, CallGraph cg) {
+        // Your implementation goes here, also feel free to add methods as needed
+        // To get your entry points we prepared getEntryPoints(scene) in the superclass for you
+    	Stream<SootMethod> entryPoints = getEntryPoints(scene);
 		entryPoints.forEach(entryPoint -> {
 //			 if (entryPoint.toString().equals("<target.exercise1.SimpleExample: void main(java.lang.String[])>")) {
 				 checkMethod(null, entryPoint, cg, scene);
 //			 }
 		});
-
-	}
-
-	private void checkMethod(SootMethod src, SootMethod target, CallGraph cg, Scene scene) {
+    }
+    
+    private void checkMethod(SootMethod src, SootMethod target, CallGraph cg, Scene scene) {
 
 		addEdge(src, target, cg);
 
@@ -74,5 +72,4 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 		if (src != null && !cg.hasEdge(src, entryPoint))
 			cg.addEdge(src, entryPoint);
 	}
-
 }

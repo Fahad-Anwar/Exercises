@@ -1,5 +1,6 @@
 package analysis.exercise2;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,19 +16,18 @@ import soot.Unit;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
 
-public class RTAAlgorithm extends CHAAlgorithm {
+public class RTAAlgorithm extends CHAAlgorithm  {
 
-	@Override
-	protected String getAlgorithm() {
-		return "RTA";
-	}
+    @Override
+    protected String getAlgorithm() {
+        return "RTA";
+    }
 
-	@Override
-	protected void populateCallGraph(Scene scene, CallGraph cg) {
-		// Your implementation goes here, also feel free to add methods as needed
-		// To get your entry points we prepared getEntryPoints(scene) in the superclass
-		// for you
-		Stream<SootMethod> entryPoints = getEntryPoints(scene);
+    @Override
+    protected void populateCallGraph(Scene scene, CallGraph cg) {
+        // Your implementation goes here, also feel free to add methods as needed
+        // To get your entry points we prepared getEntryPoints(scene) in the superclass for you
+    	Stream<SootMethod> entryPoints = getEntryPoints(scene);
 		entryPoints.forEach(entryPoint -> {
 			
 			if (entryPoint.toString().equals("<target.exercise2.Starter: void main(java.lang.String[])>")) {
@@ -35,10 +35,9 @@ public class RTAAlgorithm extends CHAAlgorithm {
 				checkMethod(null, entryPoint, cg, scene, map);
 			}
 		});
+    }
 
-	}
-
-	private void checkMethod(SootMethod src, SootMethod entryPoint, CallGraph cg, Scene scene, Map<SootMethod, ArrayList<SootClass>> map) {
+    private void checkMethod(SootMethod src, SootMethod entryPoint, CallGraph cg, Scene scene, Map<SootMethod, ArrayList<SootClass>> map) {
 		// TODO Auto-generated method stub
 		try {
 			addEdge(src, entryPoint, cg);
@@ -92,8 +91,4 @@ public class RTAAlgorithm extends CHAAlgorithm {
 		if (src != null && !cg.hasNode(src)) cg.addNode(src);
 		if (src != null && !cg.hasEdge(src, entryPoint)) cg.addEdge(src, entryPoint);
 	}
-
-	
-
-
 }

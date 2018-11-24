@@ -17,7 +17,7 @@ public class SimpleScenario {
         fourthLeaf.doSomething();
         aliasLeaf.doSomething();
 
-        staticField = new ThirdLeafClass();
+        staticField = new SixthLeafClass();
 
         SomeInterface newStuff = staticField;
 

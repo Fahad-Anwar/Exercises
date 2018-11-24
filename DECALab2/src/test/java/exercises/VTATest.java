@@ -48,7 +48,7 @@ public class VTATest extends TestSetup {
         Set<SootMethod> callsFromMain = cg.edgesOutOf(scenarioMain);
         assertCallExists(callsFromMain, "<target.exercise2.LeafClass: void doSomething()>");
         assertCallExists(callsFromMain, "<target.exercise2.FifthLeafClass: void doSomething()>");
-        assertCallExists(callsFromMain, "<target.exercise2.ThirdLeafClass: void doSomething()>");
+        assertCallExists(callsFromMain, "<target.exercise2.SixthLeafClass: void doSomething()>");
 
         assertCallMissing(callsFromMain, "<target.exercise2.SomeInterface: void doSomething()>");
         assertCallMissing(callsFromMain, "<target.exercise2.FourthLeafClass: void doSomething()>");
