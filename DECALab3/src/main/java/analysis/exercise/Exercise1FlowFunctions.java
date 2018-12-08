@@ -16,6 +16,7 @@ import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
+import soot.jimple.internal.JAssignStmt;
 
 public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
@@ -55,8 +56,20 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 				out.add(val);
 				modelStringOperations(val, out, callSiteStmt);
 				
-				if(val.equals(DataFlowFact.zero())){
+				if(val.equals(DataFlowFact.zero())) {
 					//TODO: Implement Exercise 1a) here
+
+					if (callSiteStmt instanceof JAssignStmt
+							&& callSiteStmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
+						Value leftOp = ((JAssignStmt) callSiteStmt).getLeftOp();
+						if (leftOp instanceof Local) {
+							InstanceInvokeExpr instanceInvokeExpr = (InstanceInvokeExpr) callSiteStmt.getInvokeExpr();
+							if (instanceInvokeExpr.getMethod().getSubSignature()
+									.equals("java.lang.String getParameter(java.lang.String)")) {
+								out.add(new DataFlowFact((Local) leftOp));
+							}
+						}
+					}
 				}
 				if(call instanceof Stmt && call.toString().contains("executeQuery")){
 					Stmt stmt = (Stmt) call;
