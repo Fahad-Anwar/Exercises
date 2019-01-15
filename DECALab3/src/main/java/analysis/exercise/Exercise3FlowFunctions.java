@@ -1,6 +1,7 @@
 package analysis.exercise;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -10,14 +11,17 @@ import analysis.VulnerabilityReporter;
 import analysis.fact.DataFlowFact;
 import heros.FlowFunction;
 import soot.Local;
-import soot.SootField;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
-import soot.jimple.InstanceFieldRef;
+import soot.jimple.FieldRef;
 import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.InvokeStmt;
 import soot.jimple.Stmt;
+import soot.jimple.internal.JAssignStmt;
+import soot.jimple.internal.JInvokeStmt;
+import soot.jimple.internal.JimpleLocal;
 
 public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
 
@@ -43,6 +47,17 @@ public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
 				
 				//TODO: Implement Exercise 1c) here				
 				//TODO: Implement interprocedural part of Exercise 3 here.
+				if (callSiteStmt instanceof JInvokeStmt && callSiteStmt.containsInvokeExpr()) {
+					InvokeStmt invokeStmt = ((InvokeStmt) callSiteStmt);
+					int total_num_args = invokeStmt.getInvokeExpr().getArgCount();
+					List<Value> arguments = invokeStmt.getInvokeExpr().getArgs();
+					List<Local> parameterLocals = callee.getActiveBody().getParameterLocals();
+					for (int index = 0; index < total_num_args; index++) {
+						if (index < parameterLocals.size() && fact.getVariable().equals(arguments.get(index))) {
+							out.add(new DataFlowFact(parameterLocals.get(index), fact.getField()));
+						}
+					}
+				}
 				return out;
 			}
 
@@ -62,7 +77,15 @@ public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
 				modelStringOperations(val, out, callSiteStmt);
 				
 				if(val.equals(DataFlowFact.zero())){
-					//TODO: Implement Exercise 1a) here				
+					//TODO: Implement Exercise 1a) here		
+					if (callSiteStmt instanceof AssignStmt) {
+						Value leftOpValue = ((JAssignStmt) callSiteStmt).getLeftOp();
+						Value rightOpValue = ((JAssignStmt) callSiteStmt).getRightOp();
+						if (leftOpValue instanceof Local
+								&& rightOpValue.toString().contains("java.lang.String getParameter(java.lang.String)")) {
+								out.add(new DataFlowFact((Local) leftOpValue));
+						}
+					}
 				}
 				if(call instanceof Stmt && call.toString().contains("executeQuery")){
 					Stmt stmt = (Stmt) call;
@@ -114,7 +137,36 @@ public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
 				out.add(fact);
 				
 				//TODO: Implement Exercise 1a) here
+				Stmt callSiteStatementt = (Stmt) curr;
+				if (callSiteStatementt instanceof AssignStmt) {
+					Value leftOp = ((JAssignStmt) callSiteStatementt).getLeftOp();
+					Value rightOp = ((JAssignStmt) callSiteStatementt).getRightOp();
+					if (leftOp instanceof Local
+							&& rightOp.toString().contains("java.lang.String getParameter(java.lang.String)")) {
+							out.add(new DataFlowFact((Local) leftOp));
+					}
+				}
 				//TODO: Implement cases for field load and field store statement of Exercise 3) here
+				if (callSiteStatementt instanceof AssignStmt) {
+					AssignStmt assingStmt = (AssignStmt)callSiteStatementt;
+					Value leftOpValue = assingStmt.getLeftOp();
+					Value rightOpValue = assingStmt.getRightOp();
+					if (rightOpValue instanceof JimpleLocal && fact.getVariable().equals((JimpleLocal)rightOpValue)) {
+						if(leftOpValue instanceof JimpleLocal) { 
+							out.add(new DataFlowFact((JimpleLocal) leftOpValue));
+						} else if (leftOpValue instanceof FieldRef && leftOpValue.getUseBoxes().size() == 1) {
+							Value v = leftOpValue.getUseBoxes().get(0).getValue();
+							if (v instanceof JimpleLocal) {
+								out.add(new DataFlowFact((Local) v, ((FieldRef) leftOpValue).getField()));
+							}
+						}
+					} else if (rightOpValue instanceof FieldRef && rightOpValue.getUseBoxes().size() == 1) {
+						Value v = rightOpValue.getUseBoxes().get(0).getValue();
+						if (v instanceof JimpleLocal && fact.getVariable().equals(v)) {
+							out.add(new DataFlowFact((JimpleLocal) leftOpValue));
+						}
+					} 
+				}
 				return out;
 			}
 		};
