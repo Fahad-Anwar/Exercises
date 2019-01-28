@@ -1,6 +1,7 @@
 package analysis.exercise;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -15,7 +16,10 @@ import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.InvokeStmt;
 import soot.jimple.Stmt;
+import soot.jimple.internal.JAssignStmt;
+import soot.jimple.internal.JInvokeStmt;
 
 public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
@@ -39,6 +43,18 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 				}
 				Stmt callSiteStmt = (Stmt) callSite;
 				//TODO: Implement Exercise 1c) here
+				if (callSiteStmt instanceof JInvokeStmt && callSiteStmt.containsInvokeExpr()) {
+					InvokeStmt invokeStatement = ((InvokeStmt) callSite);
+					int total_num_args = invokeStatement.getInvokeExpr().getArgCount();
+					List<Value> arguments = invokeStatement.getInvokeExpr().getArgs();
+					List<Local> parameterLocals = callee.getActiveBody().getParameterLocals();
+					for (int index = 0; index < total_num_args; index++) {
+						if (index < parameterLocals.size() && fact.getVariable().equals(arguments.get(index))) {
+							out.add(new DataFlowFact(parameterLocals.get(index)));
+						}
+					}
+
+				}
 				return out;
 			}
 		};
@@ -55,8 +71,17 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 				out.add(val);
 				modelStringOperations(val, out, callSiteStmt);
 				
-				if(val.equals(DataFlowFact.zero())){
+				if(val.equals(DataFlowFact.zero())) {
 					//TODO: Implement Exercise 1a) here
+
+					if (callSiteStmt instanceof JAssignStmt) {
+						Value leftOpValue = ((JAssignStmt) callSiteStmt).getLeftOp();
+						Value rightOpValue = ((JAssignStmt) callSiteStmt).getRightOp();
+						if (leftOpValue instanceof Local
+								&& rightOpValue.toString().contains("java.lang.String getParameter(java.lang.String)")) {
+								out.add(new DataFlowFact((Local) leftOpValue));
+						}
+					}
 				}
 				if(call instanceof Stmt && call.toString().contains("executeQuery")){
 					Stmt stmt = (Stmt) call;
@@ -107,6 +132,17 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 				Set<DataFlowFact> out = Sets.newHashSet();
 				out.add(fact);
 				//TODO: Implement Exercise 1b) here
+				
+				if (curr instanceof AssignStmt) {
+					AssignStmt assignmentStatement = (AssignStmt) curr;
+					Value leftOpValue = assignmentStatement.getLeftOp();
+					Value rightOpValue = assignmentStatement.getRightOp();
+					if (leftOpValue instanceof Local && rightOpValue instanceof Local) {
+						if (fact.getVariable().equals(rightOpValue)) {
+							out.add(new DataFlowFact((Local) leftOpValue));
+						}
+					}
+				}
 				return out;
 			}
 		};
